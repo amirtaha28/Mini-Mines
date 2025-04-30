@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mini Mines</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    body {
+      background: #1a1a2e;
+      color: #eee;
+      font-family: 'Press Start 2P', cursive;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 120px 20px 20px 20px;
+      position: relative;
+    }
+    .title {
+      position: absolute;
+      top: 20px;
+      left: 15px;
+      text-align: left;
+      line-height: 1;
+      font-size: 52px;
+    }
+    .controls {
+      margin-bottom: 10px;
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .controls .balance-container {
+      transform: translateX(-31px);
+    }
+    .controls-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .controls input,
+    .controls select,
+    .controls button {
+      font-family: inherit;
+      font-size: 12px;
+      padding: 4px;
+      margin: 0 2px;
+      background: #16213e;
+      color: #eee;
+      border: 2px solid #0f3460;
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+    #bet { width: 60px; }
+    .controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .amount {
+      color: #00ff88;
+    }
+    .cash-amount {
+      color: #00ff88;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 50px);
+      grid-template-rows: repeat(5, 50px);
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .tile {
+      width: 50px;
+      height: 50px;
+      background: #0f3460;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      font-size: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .tile.flash::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.4);
+      animation: fadeFlash 0.6s ease-out forwards;
+    }
+    @keyframes fadeFlash { from { opacity: 1; } to { opacity: 0; } }
+    .diamond { font-size: 24px; color: #00ff88; }
+    .mine {
+      background: #ff3333;
+      color: #fff;
+      font-size: 24px;
+    }
+    #message { margin-top: 12px; height: 24px; }
+  </style>
+</head>
+<body>
+  <div class="title">Mini<br>Mines</div>
+  <div class="controls">
+    <div class="balance-container">Balance: <span id="balance-amount" class="amount">$28.00</span></div>
+    <div class="controls-row">
+      Bet: <input type="number" id="bet" min="0" value="1" step="0.01" />
+      Mines:
+      <select id="mines">
+        <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+      </select>
+    </div>
+    <div class="controls-row">
+      <button id="start">START</button>
+      <button id="cashout" disabled>CASH OUT <span id="cashout-amount" class="cash-amount"></span></button>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div id="message"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const TOTAL_TILES = 25;
+      const startBtn = document.getElementById('start');
+      const cashoutBtn = document.getElementById('cashout');
+      const betInput = document.getElementById('bet');
+      const minesSelect = document.getElementById('mines');
+      const gridEl = document.getElementById('grid');
+      const msgEl = document.getElementById('message');
+      const balEl = document.getElementById('balance-amount');
+      const cashoutAmtEl = document.getElementById('cashout-amount');
+      let minePositions = new Set();
+      let safeCount = 0;
+      let betAmount = 0;
+      let mineCount = 1;
+      let gameActive = false;
+      let balance = 28.00;
+      const savedBalance = localStorage.getItem('balance');
+      if (savedBalance !== null) balance = parseFloat(savedBalance);
+      let potential = 0;
+
+      const winMessages = [
+        'A win? How rare!',
+        'Lucky you, huh!',
+        'You win'
+      ];
+      const loseMessages = [
+        'Nice fail',
+        'Haha...gotchya!',
+        'Mine says hi!',
+        'Boom! You lost'
+      ];
+      function getRandomFrom(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
+
+      function updateBalance() {
+        balEl.textContent = `$${balance.toFixed(2)}`;
+        localStorage.setItem('balance', balance.toFixed(2));
+      }
+      function updateCashoutAmount() {
+        cashoutAmtEl.textContent = potential > 0 ? `$${potential.toFixed(2)}` : '';
+      }
+      function showMessage(text) {
+        msgEl.textContent = text;
+      }
+      function setGameState(active) {
+        gameActive = active;
+        startBtn.disabled = active;
+        cashoutBtn.disabled = !active || safeCount === 0;
+        betInput.disabled = active;
+        minesSelect.disabled = active;
+      }
+      function initGrid() {
+        gridEl.innerHTML = '';
+        for (let i = 0; i < TOTAL_TILES; i++) {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          tile.dataset.index = i;
+          tile.addEventListener('click', onTileClick);
+          gridEl.appendChild(tile);
+        }
+      }
+      function placeMines() {
+        minePositions.clear();
+        while (minePositions.size < mineCount) {
+          minePositions.add(Math.floor(Math.random() * TOTAL_TILES));
+        }
+      }
+      function startGame() {
+        betAmount = parseFloat(betInput.value) || 0;
+        if (betAmount <= 0 || betAmount > balance) {
+          showMessage('Invalid bet');
+          return;
+        }
+        mineCount = parseInt(minesSelect.value, 10);
+        balance -= betAmount;
+        updateBalance();
+        potential = 0;
+        safeCount = 0;
+        updateCashoutAmount();
+        showMessage('');
+        setGameState(true);
+        initGrid();
+        placeMines();
+      }
+      function endGame() {
+        setGameState(false);
+        document.querySelectorAll('.tile').forEach(tile => {
+          tile.removeEventListener('click', onTileClick);
+          if (minePositions.has(+tile.dataset.index)) {
+            tile.classList.add('mine');
+            tile.textContent = '💣';
+          }
+        });
+      }
+      function onTileClick(e) {
+        if (!gameActive) return;
+        const idx = +e.currentTarget.dataset.index;
+        if (minePositions.has(idx)) {
+          showMessage(getRandomFrom(loseMessages));
+          endGame();
+          updateCashoutAmount();
+          return;
+        }
+        e.currentTarget.removeEventListener('click', onTileClick);
+        safeCount++;
+        const reward = betAmount * ((mineCount + 1) / 10);
+        potential += reward;
+        updateCashoutAmount();
+        cashoutBtn.disabled = false;
+        e.currentTarget.innerHTML = '<span class="diamond">💎</span>';
+        e.currentTarget.classList.add('flash');
+        e.currentTarget.addEventListener('animationend', () => e.currentTarget.classList.remove('flash'), { once: true });
+        if (safeCount === TOTAL_TILES - mineCount) {
+          balance += potential;
+          updateBalance();
+          potential = 0;
+          updateCashoutAmount();
+          showMessage(getRandomFrom(winMessages));
+          endGame();
+        }
+      }
+      function cashOut() {
+        if (!gameActive || safeCount === 0) return;
+        balance += potential;
+        potential = 0;
+        updateBalance();
+        updateCashoutAmount();
+        showMessage('Cashed out!');
+        endGame();
+      }
+
+      startBtn.addEventListener('click', startGame);
+      cashoutBtn.addEventListener('click', cashOut);
+      updateBalance();
+      updateCashoutAmount();
+      initGrid();
+    });
+  </script>
+</body>
+</html>
