@@ -105,6 +105,45 @@
       font-size: 24px;
     }
     #message { margin-top: 12px; height: 24px; }
+
+    /* ریسپانسیو برای موبایل */
+    @media (max-width: 600px) {
+      .title {
+        font-size: 36px;
+        top: 10px;
+        left: 10px;
+      }
+      body {
+        padding-top: 100px;
+      }
+      .grid {
+        grid-template-columns: repeat(5, 40px);
+        grid-template-rows: repeat(5, 40px);
+        gap: 4px;
+      }
+      .tile {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+      .diamond,
+      .mine {
+        font-size: 20px;
+      }
+      .controls input,
+      .controls select,
+      .controls button {
+        font-size: 10px;
+        padding: 3px;
+      }
+      .controls .balance-container {
+        transform: none;
+        text-align: center;
+      }
+      .controls {
+        margin-top: 30px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -143,7 +182,7 @@
       let betAmount = 0;
       let mineCount = 1;
       let gameActive = false;
-      let balance = 80.00;  // موجودی اولیه به 80 دلار تغییر داده شد
+      let balance = 80.00;
       let potential = 0;
 
       const winMessages = [
