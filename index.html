@@ -14,35 +14,44 @@
       margin: 0;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      /* justify-content: center; حذف شده */
+      /* align-items: center; حذف شده */
       padding: 20px;
       box-sizing: border-box;
       overflow: hidden;
     }
     .title {
-      position: static;
-      text-align: center;
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      font-size: 36px;
+      margin: 0;
+      text-align: left;
       line-height: 1;
-      font-size: 48px;
-      margin-bottom: 30px;
+      user-select: none;
+      z-index: 10;
     }
     .controls {
-      margin-bottom: 10px;
+      margin-top: 20px;
+      margin-left: 120px;
+      position: relative;
+      top: -40px;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       gap: 10px;
     }
     .controls .balance-container {
       transform: none;
       text-align: center;
+      width: 100%;
     }
     .controls-row {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
-      justify-content: center;
+      justify-content: flex-start;
+      width: 100%;
     }
     .controls input,
     .controls select,
@@ -73,6 +82,7 @@
       grid-template-rows: repeat(5, 50px);
       gap: 6px;
       margin-top: 10px;
+      justify-content: center;
     }
     .tile {
       width: 50px;
@@ -105,12 +115,17 @@
       color: #fff;
       font-size: 24px;
     }
-    #message { margin-top: 12px; height: 24px; }
+    #message { margin-top: 12px; height: 24px; text-align: center; }
 
     @media (max-width: 600px) {
       .title {
-        font-size: 36px;
-        margin-bottom: 20px;
+        font-size: 24px;
+        top: 5px;
+        left: 5px;
+      }
+      .controls {
+        margin-left: 90px;
+        top: -30px;
       }
       .grid {
         grid-template-columns: repeat(5, 40px);
@@ -133,7 +148,7 @@
         padding: 3px;
       }
       .controls {
-        margin-top: 20px;
+        margin-top: 15px;
       }
     }
   </style>
