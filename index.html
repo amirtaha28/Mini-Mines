@@ -14,44 +14,35 @@
       margin: 0;
       display: flex;
       flex-direction: column;
-      /* justify-content: center; حذف شده */
-      /* align-items: center; حذف شده */
+      justify-content: center;
+      align-items: center;
       padding: 20px;
       box-sizing: border-box;
       overflow: hidden;
     }
     .title {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      font-size: 36px;
-      margin: 0;
-      text-align: left;
+      position: static;
+      text-align: center;
       line-height: 1;
-      user-select: none;
-      z-index: 10;
+      font-size: 48px;
+      margin-bottom: 30px;
     }
     .controls {
-      margin-top: 20px;
-      margin-left: 120px;
-      position: relative;
-      top: -40px;
+      margin-bottom: 10px;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
       gap: 10px;
     }
     .controls .balance-container {
       transform: none;
       text-align: center;
-      width: 100%;
     }
     .controls-row {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
-      justify-content: flex-start;
-      width: 100%;
+      justify-content: center;
     }
     .controls input,
     .controls select,
@@ -82,7 +73,6 @@
       grid-template-rows: repeat(5, 50px);
       gap: 6px;
       margin-top: 10px;
-      justify-content: center;
     }
     .tile {
       width: 50px;
@@ -115,17 +105,12 @@
       color: #fff;
       font-size: 24px;
     }
-    #message { margin-top: 12px; height: 24px; text-align: center; }
+    #message { margin-top: 12px; height: 24px; }
 
     @media (max-width: 600px) {
       .title {
-        font-size: 24px;
-        top: 5px;
-        left: 5px;
-      }
-      .controls {
-        margin-left: 90px;
-        top: -30px;
+        font-size: 36px;
+        margin-bottom: 20px;
       }
       .grid {
         grid-template-columns: repeat(5, 40px);
@@ -148,7 +133,7 @@
         padding: 3px;
       }
       .controls {
-        margin-top: 15px;
+        margin-top: 20px;
       }
     }
   </style>
@@ -173,7 +158,7 @@
   <div class="grid" id="grid"></div>
   <div id="message"></div>
 
-  <script>
+<script>
     document.addEventListener('DOMContentLoaded', () => {
       const TOTAL_TILES = 25;
       const startBtn = document.getElementById('start');
@@ -200,11 +185,11 @@
       }
 
       function updateBalance() {
-        balEl.textContent = `$${balance.toFixed(2)}`;
+        balEl.textContent = $${balance.toFixed(2)};
       }
 
       function updateCashoutAmount() {
-        cashoutAmtEl.textContent = potential > 0 ? `$${potential.toFixed(2)}` : '';
+        cashoutAmtEl.textContent = potential > 0 ? $${potential.toFixed(2)} : '';
       }
 
       function showMessage(text) {
@@ -294,7 +279,7 @@
         }
       }
 
-      function cashOut() {
+function cashOut() {
         if (!gameActive || safeCount === 0) return;
         balance += potential;
         potential = 0;
